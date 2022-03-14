@@ -33,6 +33,8 @@ jobs:
         with:
           ref: gh-pages
           token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: "Remove old content"
+        run: git rm -r *
       - name: "Download generated content"
         uses: actions/download-artifact@v2
         with:
