@@ -1,0 +1,52 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'schedule' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: content
+          path: dist/
+  publish:
+    name: "Publish"
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: "Download generated content"
+        uses: actions/download-artifact@v2
+        with:
+          name: content
+      - name: "Commit changes"
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+          git add .
+          if ! git diff-index --quiet HEAD --; then
+            git push --set-upstream origin gh-pages
+          else
+            echo -e "No changes found."
+          fi
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
