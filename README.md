@@ -1,4 +1,4 @@
-# configurator
+# Configurator
 
 ## Project setup
 ```

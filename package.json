@@ -1,6 +1,11 @@
 {
   "name": "configurator",
   "version": "0.1.0",
+  "license": "MIT-0",
+  "author": {
+    "name": "Bence Santha",
+    "email": "bence@containerssh.io"
+  },
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
