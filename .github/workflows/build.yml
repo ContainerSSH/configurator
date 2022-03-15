@@ -28,6 +28,7 @@ jobs:
         with:
           name: content
           path: dist/
+          if-no-files-found: error
   publish:
     name: "Publish"
     runs-on: ubuntu-20.04
@@ -42,6 +43,8 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
       - name: "Remove old content"
         run: git rm -r *
+      - name: Debug
+        run: find
       - name: "Download generated content"
         uses: actions/download-artifact@v2
         with:
