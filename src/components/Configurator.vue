@@ -20,7 +20,7 @@
             color="primary"
             @click="goToStep(2)"
         >
-          Start configuring
+          Continue
         </v-btn>
       </v-stepper-content>
       <!-- endregion -->
@@ -109,11 +109,46 @@
       <!-- region Step 5 -->
       <v-stepper-step
           :complete="isCompleted(5)"
+          @click="isCompleted(5) && goToStep(5)"
           step="5"
+      >
+        Configure backend
+        <small class="mt-1" v-show="isCompleted(5)">
+          Host:
+          <pre v-if="configuration.backend.backend === 'docker'" class="d-inline">{{ configuration.backend.docker.connection.host }}</pre>
+          <pre v-if="configuration.backend.backend === 'kubernetes'" class="d-inline">{{ configuration.backend.kubernetes.connection.host }}</pre>
+          <span v-show="configuration.meta.tls">
+            with configured certificates
+          </span>
+        </small>
+      </v-stepper-step>
+      <v-stepper-content step="5">
+        <div v-if="configuration.backend.backend === 'docker'">
+          <BackendDocker :configuration="configuration" />
+        </div>
+        <div v-if="configuration.backend.backend === 'kubernetes'">
+          <BackendKubernetes :configuration="configuration" />
+        </div>
+        <v-btn
+            color="primary"
+            @click="goToStep(6)"
+        >
+          Continue
+        </v-btn>
+        <v-btn text @click="goToStep(4)">
+          Back
+        </v-btn>
+      </v-stepper-content>
+      <!-- endregion -->
+
+      <!-- region Step 6 -->
+      <v-stepper-step
+          :complete="isCompleted(6)"
+          step="6"
       >
         Deployment
       </v-stepper-step>
-      <v-stepper-content step="5">
+      <v-stepper-content step="6">
         <v-card
             color="grey lighten-1"
             class="mb-12"
@@ -126,10 +161,7 @@
         >
           <v-icon>{{ icons.mdiTrayArrowDown }}</v-icon> Download
         </v-btn>
-        <v-btn text @click="goToStep(1)">
-          Create new
-        </v-btn>
-        <v-btn text @click="goToStep(4)">
+        <v-btn text @click="goToStep(5)">
           Back
         </v-btn>
       </v-stepper-content>
@@ -143,6 +175,8 @@ import Welcome from "@/components/steps/Welcome";
 import Authentication from "@/components/steps/Authentication";
 import DynamicConfiguration from "@/components/steps/DynamicConfiguration";
 import Backend from "@/components/steps/Backend";
+import BackendDocker from "@/components/steps/BackendDocker";
+import BackendKubernetes from "@/components/steps/BackendKubernetes";
 import { mdiTrayArrowUp, mdiTrayArrowDown } from '@mdi/js';
 
 export default {
@@ -152,6 +186,8 @@ export default {
     Authentication,
     DynamicConfiguration,
     Backend,
+    BackendDocker,
+    BackendKubernetes,
   },
   methods: {
     isCompleted: function (step) {
@@ -169,14 +205,39 @@ export default {
     step: 1,
     configurationForm: "",
     configuration: {
+      meta: {
+        authMethod: "bearer",
+        tls: false,
+      },
       backend: {
         backend: "docker",
         docker: {
           connection: {
-            host: "unix:///var/run/docker.sock"
+            cacert: null,
+            cert: null,
+            host: "unix:///var/run/docker.sock",
+            key: null,
           }
         },
-        kubernetes: {}
+        kubernetes: {
+          connection: {
+            bearerToken: null, //
+            bearerTokenFile: null,
+            burst: 0,
+            cacert: null,
+            cacertFile: null,
+            cert: null,
+            certFile: null,
+            host: 'kubernetes.default.svc', //
+            key: null,
+            keyFile: null,
+            password: null,
+            path: '/api',
+            qps: 5,
+            serverName: null, //
+            username: null, //
+          }
+        }
       },
       authentication: {
         webhook: {

@@ -1,12 +1,11 @@
 <template>
   <v-container fluid>
-    <v-row>
+    <v-row dense>
       <v-col>
         <v-radio-group
-            hint="Meh"
+            label="Select your backend"
             v-model="configuration.backend.backend"
-            class="mt-0"
-            row
+            column
         >
           <v-radio value="docker">
             <template v-slot:label>

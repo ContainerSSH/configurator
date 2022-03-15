@@ -15,6 +15,7 @@
             required
         ></v-text-field>
         <v-alert
+            v-show="configuration.dynamicConfiguration.server.url.startsWith('http:')"
             :icon="icons.mdiAlert"
             border="left"
             color="orange"
@@ -34,7 +35,7 @@
 
 <script>
 import isURL from 'validator/lib/isURL'
-import {mdiTrayArrowUp, mdiContentPaste, mdiAlert} from '@mdi/js';
+import {mdiAlert} from '@mdi/js';
 
 export default {
   name: 'DynamicConfiguration',
@@ -45,27 +46,13 @@ export default {
     validateURL: function (value) {
       return isURL(value, {protocols: ['http', 'https'], require_tld: false})
     },
-    selectCertificateFromDevice: function () {
-      this.$refs.certificateContentFileUploader.input.click();
-    },
-    loadCertificateFromFile: function () {
-      let reader = new FileReader();
-      reader.readAsText(this.certificateContentFile);
-      reader.onload = () => {
-        this.configuration.authentication.webhook.certificate = reader.result
-      }
-      reader.onerror = () => {
-        this.certificateContentMessage = reader.error
-      }
-    },
   },
   data: () => ({
-    certificateContentFile: null,
-    certificateContentMessage: null,
     icons: {
-      mdiTrayArrowUp,
-      mdiContentPaste,
       mdiAlert
+    },
+    rules: {
+      required: v => !!v || 'Required.'
     }
   })
 }

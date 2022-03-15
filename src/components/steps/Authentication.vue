@@ -6,10 +6,7 @@
             label="Webhook URL"
             hint="ContainerSSH will send a HTTP request to this URL for every authentication attempt. The webhook server can decide to allow or deny the request. You can find more information about the webhook protocol in the documentation."
             v-model="configuration.authentication.webhook.url"
-            :rules="[
-              v => !!v || 'URL is required',
-              v => this.validateURL(v) || 'Valid URL required'
-            ]"
+            :rules="[rules.required, rules.isURL]"
             persistent-hint
             outlined
             required
@@ -32,35 +29,10 @@
     </v-row>
     <v-row v-show="configuration.authentication.webhook.url.startsWith('https:')">
       <v-col>
-        <v-textarea
-            label="Webhook server certificate"
-            v-model="configuration.authentication.webhook.certificate"
-            :rules="configuration.authentication.webhook.certificateRules"
-            persistent-hint
-            outlined
-            required
-        ></v-textarea>
-          <label
-              class="mt-n5 float-right v-btn v-btn--text theme--light v-size--default"
-              for="certificateContentFileUploader"
-          >
-            <v-icon>{{ icons.mdiTrayArrowUp }}</v-icon>
-            Browse files
-          </label>
-        <v-file-input
-            hide-input
-            id="certificateContentFileUploader"
-            v-model="certificateContentFile"
-            @change="loadCertificateFromFile()"
-            accept=".crt, .cer, .pem, .txt"
-            class="d-none"
-        ></v-file-input>
-        <v-alert
-            color="red"
-            dense
-            type="error"
-            v-model="certificateContentMessage"
-        ></v-alert>
+        <CertificateField
+          label="Webhook server certificate"
+          v-model="configuration.authentication.webhook.certificate"
+        ></CertificateField>
       </v-col>
     </v-row>
   </v-container>
@@ -68,6 +40,7 @@
 
 <script>
 import isURL from 'validator/lib/isURL'
+import CertificateField from "@/components/CertificateField";
 import {mdiTrayArrowUp, mdiContentPaste, mdiAlert} from '@mdi/js';
 
 export default {
@@ -75,13 +48,10 @@ export default {
   props: {
     configuration: Object
   },
+  components: {
+    CertificateField
+  },
   methods: {
-    validateURL: function (value) {
-      return isURL(value, {protocols: ['http', 'https'], require_tld: false})
-    },
-    selectCertificateFromDevice: function () {
-      this.$refs.certificateContentFileUploader.input.click();
-    },
     loadCertificateFromFile: function () {
       let reader = new FileReader();
       reader.readAsText(this.certificateContentFile);
@@ -100,7 +70,17 @@ export default {
       mdiTrayArrowUp,
       mdiContentPaste,
       mdiAlert
+    },
+    rules: {
+      required: v => !!v || 'Required.',
+      isURL: v => isURL(v, {protocols: ['http', 'https'], require_tld: false}) || 'The specified URL is valid.',
     }
   })
 }
 </script>
+
+<style>
+.textarea-certificate textarea {
+  font-family: Consolas, "Courier New",serif;
+}
+</style>
