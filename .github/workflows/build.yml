@@ -46,6 +46,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: content
+      - name: Debug
+        run: find
       - name: "Commit changes"
         run: |
           set -euo pipefail
