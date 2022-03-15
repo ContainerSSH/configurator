@@ -33,6 +33,9 @@ jobs:
     name: "Publish"
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: site-deployment
+      cancel-in-progress: false
     needs:
       - build
     steps:
