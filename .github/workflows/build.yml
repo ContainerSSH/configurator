@@ -43,20 +43,17 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
       - name: "Remove old content"
         run: git rm -r *
-      - name: Debug
-        run: find
       - name: "Download generated content"
         uses: actions/download-artifact@v2
         with:
           name: content
-      - name: Debug
-        run: find
       - name: "Commit changes"
         run: |
           set -euo pipefail
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
           git add .
+          git commit -m "Automatic publishing"
           if ! git diff-index --quiet HEAD --; then
             git push --set-upstream origin gh-pages
           else
