@@ -36,30 +36,6 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row dense>
-      <v-col>
-        <v-text-field
-            label="Burst"
-            hint="Burst indicates the maximum burst for throttle."
-            v-model="configuration.backend.kubernetes.connection.burst"
-            persistent-hint
-            outlined
-            required
-        ></v-text-field>
-      </v-col>
-    </v-row>
-    <v-row dense>
-      <v-col>
-        <v-text-field
-            label="QPS"
-            hint="QPS indicates the maximum QPS to the master from this client. Defaults to 5."
-            v-model="configuration.backend.kubernetes.connection.qps"
-            persistent-hint
-            outlined
-            required
-        ></v-text-field>
-      </v-col>
-    </v-row>
     <v-row>
       <v-col>
         <v-divider></v-divider>
