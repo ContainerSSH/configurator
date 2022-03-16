@@ -1,7 +1,10 @@
 <template>
   <div>
     <v-textarea
-      class="textarea-certificate"
+      class="v-textarea-certificate"
+      :rules="rules.concat([
+        v => /^-----BEGIN CERTIFICATE-----([\s\S]*)-----END CERTIFICATE-----\s?$/.test(v) || 'This does not look like a PEM certificate.'
+      ])"
       v-bind="$attrs"
       v-on="$listeners"
       :label="label"
@@ -15,7 +18,7 @@
     <v-file-input
         :label="`${label} file`"
         v-model="payload"
-        accept=".crt, .cer, .pem, .key, .ca, .txt"
+        accept=".crt, .cer, .pem, .txt"
         @change="loadFile()"
     ></v-file-input>
   </div>
@@ -26,7 +29,7 @@ import { VTextarea } from "vuetify/lib/components";
 
 export default {
   name: 'CertificateField',
-  props: ['label', 'hint', 'type'],
+  props: ['label', 'hint', 'type', 'rules'],
   extends: VTextarea,
   data: () => ({
     payload: null,
@@ -58,7 +61,7 @@ export default {
 </script>
 
 <style>
-.textarea-certificate textarea {
+.v-textarea-certificate textarea {
   font-family: Consolas, "Courier New",serif;
 }
 </style>

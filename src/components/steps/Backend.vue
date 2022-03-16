@@ -4,8 +4,8 @@
       <v-col>
         <v-radio-group
             label="Select your backend"
-            v-model="configuration.backend.backend"
-            column
+            v-model="answers.backend.backend"
+            row
         >
           <v-radio value="docker">
             <template v-slot:label>
@@ -31,7 +31,7 @@ import { mdiKubernetes, mdiDocker } from '@mdi/js';
 export default {
   name: 'Backend',
   props: {
-    configuration: Object
+    answers: Object
   },
   methods: {},
   data: () => ({

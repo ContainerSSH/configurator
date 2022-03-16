@@ -6,16 +6,19 @@
         v-model="step"
         vertical
     >
-      <!-- region Step 1 -->
+      <!-- region Step 1: Welcome -->
+      <!-- region Header -->
       <v-stepper-step
           :complete="isCompleted(1)"
-          @click="goToStep(1)"
+          @click="goToStepIfCompleted(1)"
           step="1"
       >
         Welcome
       </v-stepper-step>
+      <!-- endregion -->
+      <!-- region Content -->
       <v-stepper-content step="1">
-        <Welcome :configuration="configuration"/>
+        <Welcome :answers="answers"/>
         <v-btn
             color="primary"
             @click="goToStep(2)"
@@ -24,23 +27,28 @@
         </v-btn>
       </v-stepper-content>
       <!-- endregion -->
+      <!-- endregion -->
 
-      <!-- region Step 2 -->
+      <!-- region Step 2: Authentication -->
+      <!-- region Header -->
       <v-stepper-step
           :complete="isCompleted(2)"
-          @click="isCompleted(2) && goToStep(2)"
+          @click="goToStepIfCompleted(2)"
           step="2"
       >
         Authentication
         <small class="mt-1" v-show="isCompleted(2)">
-          Webhook URL: <pre class="d-inline">{{ configuration.authentication.webhook.url }}</pre>
-          <span v-show="configuration.authentication.webhook.url.startsWith('http:')">
+          Webhook URL:
+          <pre class="d-inline">{{ answers.authentication.webhook.url }}</pre>
+          <span v-show="webhookUrlIsInsecure()">
             without TLS-encryption
           </span>
         </small>
       </v-stepper-step>
+      <!-- endregion -->
+      <!-- region Content -->
       <v-stepper-content step="2">
-        <Authentication :configuration="configuration"/>
+        <Authentication :answers="answers"/>
         <v-btn
             color="primary"
             @click="goToStep(3)"
@@ -52,23 +60,31 @@
         </v-btn>
       </v-stepper-content>
       <!-- endregion -->
+      <!-- endregion -->
 
-      <!-- region Step 3 -->
+      <!-- region Step 3: Dynamic configuration -->
+      <!-- region Header -->
       <v-stepper-step
           :complete="isCompleted(3)"
-          @click="isCompleted(3) && goToStep(3)"
+          @click="goToStepIfCompleted(3)"
           step="3"
       >
         Dynamic configuration
-        <small class="mt-1" v-show="isCompleted(3)">
-          Config server URL: <pre class="d-inline">{{ configuration.dynamicConfiguration.server.url }}</pre>
-          <span v-show="configuration.dynamicConfiguration.server.url.startsWith('http:')">
+        <small class="mt-1" v-show="isCompleted(3) && answers.configuration.use">
+          Config server URL:
+          <pre class="d-inline">{{ answers.configuration.server.url }}</pre>
+          <span v-show="configServerUrlIsInsecure()">
             without TLS-encryption
           </span>
         </small>
+        <small class="mt-1" v-show="isCompleted(3) && !answers.configuration.use">
+          Disabled.
+        </small>
       </v-stepper-step>
+      <!-- endregion -->
+      <!-- region Content -->
       <v-stepper-content step="3">
-        <DynamicConfiguration :configuration="configuration"/>
+        <DynamicConfiguration :answers="answers"/>
         <v-btn
             color="primary"
             @click="goToStep(4)"
@@ -80,20 +96,36 @@
         </v-btn>
       </v-stepper-content>
       <!-- endregion -->
+      <!-- endregion -->
 
-      <!-- region Step 4 -->
+      <!-- region Step 4: Backend -->
+      <!-- region Header -->
       <v-stepper-step
           :complete="isCompleted(4)"
-          @click="isCompleted(4) && goToStep(4)"
+          @click="goToStepIfCompleted(4)"
           step="4"
       >
         Backend
         <small class="mt-1" v-show="isCompleted(4)">
-          Using: <pre class="d-inline">{{ configuration.backend.backend }}</pre>
+          Using:
+          <pre class="d-inline">{{ answers.backend.backend }}</pre>,
+          host:
+          <pre v-if="answers.backend.backend === 'docker'"
+               class="d-inline">{{ answers.backend.docker.host }}</pre>
+          <pre v-if="answers.backend.backend === 'kubernetes'"
+               class="d-inline">{{ answers.backend.kubernetes.host }}</pre>
         </small>
       </v-stepper-step>
+      <!-- endregion -->
+      <!-- region Content -->
       <v-stepper-content step="4">
-        <Backend :configuration="configuration"/>
+        <Backend :answers="answers"/>
+        <div v-if="answers.backend.backend === 'docker'">
+          <BackendDocker :answers="answers"/>
+        </div>
+        <div v-if="answers.backend.backend === 'kubernetes'">
+          <BackendKubernetes :answers="answers"/>
+        </div>
         <v-btn
             color="primary"
             @click="step = 5"
@@ -105,66 +137,22 @@
         </v-btn>
       </v-stepper-content>
       <!-- endregion -->
-
-      <!-- region Step 5 -->
-      <v-stepper-step
-          :complete="isCompleted(5)"
-          @click="isCompleted(5) && goToStep(5)"
-          step="5"
-      >
-        Configure backend
-        <small class="mt-1" v-show="isCompleted(5)">
-          Host:
-          <pre v-if="configuration.backend.backend === 'docker'" class="d-inline">{{ configuration.backend.docker.connection.host }}</pre>
-          <pre v-if="configuration.backend.backend === 'kubernetes'" class="d-inline">{{ configuration.backend.kubernetes.connection.host }}</pre>
-          <span v-show="configuration.meta.tls">
-            with configured certificates
-          </span>
-        </small>
-      </v-stepper-step>
-      <v-stepper-content step="5">
-        <div v-if="configuration.backend.backend === 'docker'">
-          <BackendDocker :configuration="configuration" />
-        </div>
-        <div v-if="configuration.backend.backend === 'kubernetes'">
-          <BackendKubernetes :configuration="configuration" />
-        </div>
-        <v-btn
-            color="primary"
-            @click="goToStep(6)"
-        >
-          Continue
-        </v-btn>
-        <v-btn text @click="goToStep(4)">
-          Back
-        </v-btn>
-      </v-stepper-content>
       <!-- endregion -->
 
-      <!-- region Step 6 -->
+      <!-- region Step 5: Download -->
+      <!-- region Header -->
       <v-stepper-step
-          :complete="isCompleted(6)"
-          step="6"
+          :complete="isCompleted(5)"
+          step="5"
       >
-        Deployment
+        Download
       </v-stepper-step>
-      <v-stepper-content step="6">
-        <v-card
-            color="grey lighten-1"
-            class="mb-12"
-            height="200px"
-        ></v-card>
-        <!-- TODO: Implement me -->
-        <v-btn
-            color="primary"
-            @click="goToStep(1)"
-        >
-          <v-icon>{{ icons.mdiTrayArrowDown }}</v-icon> Download
-        </v-btn>
-        <v-btn text @click="goToStep(5)">
-          Back
-        </v-btn>
+      <!-- endregion -->
+      <!-- region Content -->
+      <v-stepper-content step="5">
+        <Download :answers="answers" />
       </v-stepper-content>
+      <!-- endregion -->
       <!-- endregion -->
     </v-stepper>
   </v-form>
@@ -177,7 +165,7 @@ import DynamicConfiguration from "@/components/steps/DynamicConfiguration";
 import Backend from "@/components/steps/Backend";
 import BackendDocker from "@/components/steps/BackendDocker";
 import BackendKubernetes from "@/components/steps/BackendKubernetes";
-import { mdiTrayArrowUp, mdiTrayArrowDown } from '@mdi/js';
+import Download from "@/components/steps/Download";
 
 export default {
   name: 'Configurator',
@@ -188,73 +176,62 @@ export default {
     Backend,
     BackendDocker,
     BackendKubernetes,
-  },
-  methods: {
-    isCompleted: function (step) {
-      return this.step > step
-    },
-    goToStep: function (step) {
-      this.step = step
-    }
+    Download,
   },
   data: () => ({
-    icons: {
-      mdiTrayArrowUp,
-      mdiTrayArrowDown
-    },
+    icons: {},
     step: 1,
     configurationForm: "",
-    configuration: {
-      meta: {
-        authMethod: "bearer",
-        tls: false,
+    answers: {
+      authentication: {
+        webhook: {
+          url: 'http://authconfig:8080',
+          certificate: null,
+          tlsClientAuthentication: false,
+        },
+      },
+      configuration: {
+        // use dynamic configuration option
+        use: false,
+        server: {
+          url: 'http://authconfig:8080/config',
+          certificate: null,
+          tlsClientAuthentication: false,
+        },
       },
       backend: {
         backend: "docker",
         docker: {
-          connection: {
-            cacert: null,
-            cert: null,
-            host: "unix:///var/run/docker.sock",
-            key: null,
-          }
+          host: "unix:///var/run/docker.sock",
+          authenticationMethod: 'none',
         },
         kubernetes: {
-          connection: {
-            bearerToken: null, //
-            bearerTokenFile: null,
-            burst: 0,
-            cacert: null,
-            cacertFile: null,
-            cert: null,
-            certFile: null,
-            host: 'kubernetes.default.svc', //
-            key: null,
-            keyFile: null,
-            password: null,
-            path: '/api',
-            qps: 5,
-            serverName: null, //
-            username: null, //
-          }
-        }
-      },
-      authentication: {
-        webhook: {
-          url: "http://authconfig:8080",
-          certificate: "",
-        }
-      },
-      dynamicConfiguration: {
-        server: {
-          url: "http://authconfig:8080/config"
+          host: 'kubernetes.default.svc',
+          serverName: 'kubernetes.default.svc',
+          path: '/api',
+          authenticationMethod: 'bearer',
         },
-        ssh: {
-          banner: "Welcome to ContainerSSH!\n",
-          hostkeys: []
-        }
-      }
+      },
     },
   }),
+  methods: {
+    isCompleted: function (step) {
+      return this.step > step
+    },
+    webhookUrlIsInsecure: function () {
+      return this.answers.authentication.webhook.url.startsWith('http:')
+    },
+    configServerUrlIsInsecure: function() {
+      return this.answers.configuration.server.url.startsWith('http:')
+    },
+    goToStep: function (step) {
+      this.step = step
+    },
+    goToStepIfCompleted: function (step) {
+      if (this.isCompleted(step)) {
+        this.goToStep(step)
+      }
+    }
+  }
 }
 </script>
