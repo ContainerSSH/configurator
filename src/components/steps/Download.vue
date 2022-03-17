@@ -23,14 +23,6 @@
           <v-icon>{{ icons.mdiTrayArrowDown }}</v-icon>
           Download
         </v-btn>
-        <v-btn
-          color="secondary"
-          class="ml-5"
-          v-clipboard="() => configContent"
-        >
-          <v-icon>{{ icons.mdiClipboardTextOutline }}</v-icon>
-          Copy to clipboard
-        </v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -168,9 +160,6 @@ export default {
           }
       );
       FileSaver.saveAs(blob, "config.yaml")
-    },
-    copyToClipboard: function() {
-      //
     },
   },
   mounted() {
