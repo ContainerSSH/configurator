@@ -128,7 +128,7 @@
         </div>
         <v-btn
             color="primary"
-            @click="step = 5"
+            @click="goToStep(5)"
         >
           Continue
         </v-btn>
@@ -150,7 +150,7 @@
       <!-- endregion -->
       <!-- region Content -->
       <v-stepper-content step="5">
-        <Download :answers="answers" />
+        <Download :answers="answers" ref="configGenerator" />
       </v-stepper-content>
       <!-- endregion -->
       <!-- endregion -->
@@ -226,6 +226,7 @@ export default {
     },
     goToStep: function (step) {
       this.step = step
+      this.$refs.configGenerator.generateConfig()
     },
     goToStepIfCompleted: function (step) {
       if (this.isCompleted(step)) {

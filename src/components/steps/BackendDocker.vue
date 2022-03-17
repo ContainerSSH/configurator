@@ -25,12 +25,7 @@
               None
             </template>
           </v-radio>
-          <v-radio value="bearer" disabled>
-            <template v-slot:label>
-              Bearer token
-            </template>
-          </v-radio>
-          <v-radio value="certificate" disabled>
+          <v-radio value="certificate">
             <template v-slot:label>
               Certificate
             </template>

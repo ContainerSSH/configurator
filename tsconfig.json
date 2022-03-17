@@ -15,7 +15,7 @@
       "webpack-env",
       "jest",
       "vuetify",
-      "clipboard"
+      "v-clipboard",
     ],
     "typeRoots": [
       "./node_modules/vuetify/types"
