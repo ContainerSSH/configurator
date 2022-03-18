@@ -6,18 +6,14 @@
   </v-app>
 </template>
 
-<script>
+<script type="ts">
 import Home from './views/Home';
 
 export default {
   name: 'App',
-
   components: {
     Home,
   },
-
-  data: () => ({
-    //
-  }),
+  data: () => ({}),
 };
 </script>

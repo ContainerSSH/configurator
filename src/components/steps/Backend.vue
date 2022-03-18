@@ -19,7 +19,7 @@
   </v-container>
 </template>
 
-<script>
+<script type="ts">
 import { mdiKubernetes, mdiDocker } from '@mdi/js';
 
 export default {

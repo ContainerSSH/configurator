@@ -54,7 +54,7 @@
   </v-container>
 </template>
 
-<script>
+<script type="ts">
 import lodash from 'lodash';
 import YAML from 'yaml';
 import FileSaver from 'file-saver';

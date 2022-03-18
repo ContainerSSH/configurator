@@ -158,7 +158,7 @@
   </v-form>
 </template>
 
-<script>
+<script type="ts">
 import Welcome from "@/components/steps/Welcome";
 import Authentication from "@/components/steps/Authentication";
 import DynamicConfiguration from "@/components/steps/DynamicConfiguration";

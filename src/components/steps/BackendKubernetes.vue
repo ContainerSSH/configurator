@@ -64,7 +64,7 @@
   </v-container>
 </template>
 
-<script>
+<script type="ts">
 export default {
   name: 'BackendKubernetes',
   props: {

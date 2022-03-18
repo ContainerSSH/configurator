@@ -50,7 +50,7 @@
   </v-container>
 </template>
 
-<script>
+<script type="ts">
 import EnvironmentField from "@/components/form/EnvironmentField";
 import DockerMountField from "@/components/form/DockerMountField";
 
