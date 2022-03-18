@@ -43,17 +43,22 @@
             v-model="answers.backend.kubernetes.authenticationMethod"
             column
         >
-          <v-radio value="bearer">
+          <v-radio v-for="(record, index) in authenticationMethods" :key="index" :value="record.value">
             <template v-slot:label>
-              Bearer token
-            </template>
-          </v-radio>
-          <v-radio value="certificate">
-            <template v-slot:label>
-              Certificate
+              {{ record.displayName }}
             </template>
           </v-radio>
         </v-radio-group>
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col>
+        <v-text-field
+            v-model="answers.backend.kubernetes.image"
+            label="Container guest image"
+            outlined
+        >
+        </v-text-field>
       </v-col>
     </v-row>
   </v-container>
@@ -67,6 +72,17 @@ export default {
   },
   components: {},
   methods: {},
-  data: () => ({})
+  data: () => ({
+    authenticationMethods: [
+      {
+        displayName: 'Bearer token',
+        value: 'bearer',
+      },
+      {
+        displayName: 'Certificate',
+        value: 'certificate',
+      },
+    ]
+  })
 }
 </script>

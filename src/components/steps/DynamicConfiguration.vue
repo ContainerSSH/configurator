@@ -100,7 +100,7 @@
 
 <script>
 import isURL from 'validator/lib/isURL'
-import CertificateField from "@/components/CertificateField";
+import CertificateField from "@/components/form/CertificateField";
 import {mdiAlert, mdiCheck} from '@mdi/js';
 
 export default {

@@ -204,12 +204,16 @@ export default {
         docker: {
           host: "unix:///var/run/docker.sock",
           authenticationMethod: 'none',
+          image: 'containerssh/containerssh',
+          env: [],
+          mount: []
         },
         kubernetes: {
           host: 'kubernetes.default.svc',
           serverName: 'kubernetes.default.svc',
           path: '/api',
           authenticationMethod: 'bearer',
+          image: 'containerssh/containerssh-guest-image',
         },
       },
     },

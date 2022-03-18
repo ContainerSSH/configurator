@@ -1,14 +1,39 @@
+<!--
+  TODO Specify custom docker image (containerssh/containerssh-guest-image)
+  TODO Support ENV variables
+  TODO Support Volume mounts ( https://containerssh.io/reference/docker/#mounts )
+ -> docker:
+      execution:
+        host:
+          mounts:
+            - target: /path/in/container
+              source: <volume name, host path, etc>
+              type: <bind*|volume|tmpfs|npipe>
+  TODO Looking for copy to clipboard solution --> gh --> https://github.com/haveyoudebuggedit/debugged.it/blob/main/assets/js/codecopy.js
+
+-->
 <template>
   <v-container fluid>
+    <v-row>
+      <v-col>
+        <v-alert
+            type="info"
+        >
+          Please review the configuration below before use, as some parameters need to be set manually.
+        </v-alert>
+      </v-col>
+    </v-row>
     <v-row dense>
       <v-col>
         <v-textarea
+            label="config.yaml"
             class="v-textarea-config"
             :value="configContent"
-            readonly
             persistent-hint
             outlined
+            readonly
             spellcheck="false"
+            rows="15"
         >
         </v-textarea>
       </v-col>
@@ -19,6 +44,7 @@
             color="primary"
             v-show="isFileSaverSupported"
             @click="downloadConfig()"
+            large
         >
           <v-icon>{{ icons.mdiTrayArrowDown }}</v-icon>
           Download
@@ -29,6 +55,7 @@
 </template>
 
 <script>
+import lodash from 'lodash';
 import YAML from 'yaml';
 import FileSaver from 'file-saver';
 import { mdiTrayArrowDown, mdiClipboardTextOutline } from '@mdi/js';
@@ -43,7 +70,6 @@ export default {
     generateConfig: function() {
       this.yamlStructure = {
         ssh: {
-          banner: "Welcome to ContainerSSH!\n",
           hostkeys: [
             "/var/secrets/ssh_host_rsa_key",
           ],
@@ -61,19 +87,35 @@ export default {
       this.yamlStructure.auth.url = this.answers.authentication.webhook.url
 
       if (this.answers.authentication.webhook.url.startsWith('https:')) {
-        this.yamlStructure.auth = Object.assign(this.yamlStructure.auth, {
+        this.yamlStructure.auth = lodash.mergeWith(this.yamlStructure.auth, {
           cert: this.answers.authentication.webhook.certificate
         })
       }
-
-      // TODO: Implemenet TLS client authentication switch (What we need to put in the conf?)
-
       // endregion
 
       // region Dynamic Configuration
-
-      // TODO Implement Dynamic Configuration
-
+      if (this.answers.configuration.use) {
+        this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
+          configuration: {
+            url: this.answers.configuration.server.url
+          }
+        })
+        if (this.answers.configuration.server.url.startsWith('https:')) {
+          this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
+            configuration: {
+              cert: this.answers.configuration.server.certificate
+            }
+          })
+        }
+        if (this.answers.configuration.server.tlsClientAuthentication) {
+          this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
+            configuration: {
+              cacert: "-----BEGIN CERTIFICATE-----\n(PLEASE REPLACE)\n-----END CERTIFICATE-----",
+              key: "-----BEGIN RSA PRIVATE KEY-----\n(PLEASE REPLACE)\n-----END RSA PRIVATE KEY-----"
+            }
+          })
+        }
+      }
       // endregion
 
       // region Backend
@@ -82,7 +124,7 @@ export default {
 
       // region Backend: Docker
       if (this.answers.backend.backend === "docker") {
-        this.yamlStructure = Object.assign(this.yamlStructure, {
+        this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
           docker: {
             connection: {
               host: this.answers.backend.docker.host
@@ -90,13 +132,29 @@ export default {
           }
         })
         if (this.answers.backend.docker.authenticationMethod === "certificate") {
-          this.yamlStructure.docker.connection = Object.assign(this.yamlStructure.docker.connection, {
-            cacert: '--- PLEASE INSERT YOUR CA CERT HERE OR ... ---\n',
-            cacertFile: '/specify/the/path/of/ca.crt',
-            cert: '--- PLEASE INSERT YOUR CERTIFICATE HERE OR ... ---\n',
-            certFile: '/specify/the/path/of/certificate/file.pem',
-            key: '--- PLEASE INSERT YOUR PRIVATE KEY HERE OR ... ---\n',
-            keyFile: '/specify/the/path/of/private/key/file.key',
+          this.yamlStructure.docker.connection = lodash.mergeWith(this.yamlStructure.docker.connection, {
+            cacert: "-----BEGIN CERTIFICATE-----\n(PLEASE REPLACE)\n-----END CERTIFICATE-----",
+            cert:  "-----BEGIN CERTIFICATE-----\n(PLEASE REPLACE)\n-----END CERTIFICATE-----",
+            key: "-----BEGIN RSA PRIVATE KEY-----\n(PLEASE REPLACE)\n-----END RSA PRIVATE KEY-----",
+          })
+        }
+        // this.answers.backend.docker.env
+        if (this.answers.backend.docker.env.length > 0) {
+          this.yamlStructure.docker = lodash.mergeWith(this.yamlStructure.docker, {
+            execution: {
+              container: {
+                env: Object.entries(this.answers.backend.docker.env).map(([ k, v ]) => v.key + "=" + v.value)
+              }
+            }
+          })
+        }
+        if (this.answers.backend.docker.mount.length > 0) {
+          this.yamlStructure.docker = lodash.mergeWith(this.yamlStructure.docker, {
+            execution: {
+              host: {
+                mounts: this.answers.backend.docker.mount
+              }
+            }
           })
         }
       }
@@ -104,14 +162,13 @@ export default {
 
       // region Backend: Kubernetes
       if (this.answers.backend.backend === "kubernetes") {
-        this.yamlStructure = Object.assign(this.yamlStructure, {
+        this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
           kubernetes: {
             connection: {
               serverName: this.answers.backend.kubernetes.serverName,
               host: this.answers.backend.kubernetes.host,
               path: this.answers.backend.kubernetes.path,
-              cacert: '--- PLEASE INSERT YOUR CA CERT HERE OR ... ---\n',
-              cacertFile: '/specify/the/path/of/ca.crt',
+              cacertFile: '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt',
             },
             pod: {
               metadata: {
@@ -121,7 +178,7 @@ export default {
                 containers: [
                   {
                     name: 'shell',
-                    image: 'containerssh/containerssh-guest-image',
+                    image: this.answers.backend.kubernetes.image,
                   }
                 ],
               },
@@ -130,16 +187,13 @@ export default {
         })
 
         if (this.answers.backend.kubernetes.authenticationMethod === "bearer") {
-          this.yamlStructure.kubernetes.connection = Object.assign(this.yamlStructure.kubernetes.connection, {
-            bearerToken: '--- PLEASE INSERT YOUR BEARER TOKEN HERE OR ... ---\n',
-            bearerTokenFile: '/specify/the/path/of/bearer/token',
+          this.yamlStructure.kubernetes.connection = lodash.mergeWith(this.yamlStructure.kubernetes.connection, {
+            bearerTokenFile: '/var/run/secrets/kubernetes.io/serviceaccount/token',
           })
         }
         if (this.answers.backend.kubernetes.authenticationMethod === "certificate") {
-          this.yamlStructure.kubernetes.connection = Object.assign(this.yamlStructure.kubernetes.connection, {
-            cert: '--- PLEASE INSERT YOUR CERTIFICATE HERE OR ... ---\n',
+          this.yamlStructure.kubernetes.connection = lodash.mergeWith(this.yamlStructure.kubernetes.connection, {
             certFile: '/specify/the/path/of/certificate/file.pem',
-            key: '--- PLEASE INSERT YOUR PRIVATE KEY HERE OR ... ---\n',
             keyFile: '/specify/the/path/of/private/key/file.key',
           })
         }

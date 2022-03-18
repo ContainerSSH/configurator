@@ -12,7 +12,6 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <!-- TODO: Hide when using socket -->
     <v-row dense>
       <v-col>
         <v-radio-group
@@ -20,37 +19,62 @@
             v-model="answers.backend.docker.authenticationMethod"
             column
         >
-          <v-radio value="none">
+          <v-radio v-for="(record, index) in authenticationMethods" :key="index" :value="record.value">
             <template v-slot:label>
-              None
-            </template>
-          </v-radio>
-          <v-radio value="certificate">
-            <template v-slot:label>
-              Certificate
+              {{ record.displayName }}
             </template>
           </v-radio>
         </v-radio-group>
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col>
+        <v-text-field
+            v-model="answers.backend.docker.image"
+            label="Container image"
+            outlined
+        >
+        </v-text-field>
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col>
+        <EnvironmentField v-model="answers.backend.docker.env" label="Container environment variables" class="pl-0 pr-0" />
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col>
+        <DockerMountField v-model="answers.backend.docker.mount" label="Host mount points" class="pl-0 pr-0" />
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
-import { mdiDocker } from '@mdi/js';
+import EnvironmentField from "@/components/form/EnvironmentField";
+import DockerMountField from "@/components/form/DockerMountField";
 
 export default {
   name: 'BackendDocker',
   props: {
     answers: Object
   },
-  components: {},
+  components: {
+    DockerMountField,
+    EnvironmentField
+  },
   methods: {},
   data: () => ({
-    tls: false,
-    icons: {
-      mdiDocker
-    }
+    authenticationMethods: [
+      {
+        displayName: 'None',
+        value: 'none',
+      },
+      {
+        displayName: 'Certificate',
+        value: 'certificate',
+      }
+    ]
   })
 }
 </script>

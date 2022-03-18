@@ -7,16 +7,10 @@
             v-model="answers.backend.backend"
             row
         >
-          <v-radio value="docker">
+          <v-radio v-for="(record, index) in backends" :key="index" :value="record.value">
             <template v-slot:label>
-              <v-icon>{{ icons.mdiDocker }}</v-icon>
-              <div>Docker</div>
-            </template>
-          </v-radio>
-          <v-radio value="kubernetes">
-            <template v-slot:label>
-              <v-icon>{{ icons.mdiKubernetes }}</v-icon>
-              <div>Kubernetes</div>
+              <v-icon>{{ record.icon }}</v-icon>
+              {{ record.displayName }}
             </template>
           </v-radio>
         </v-radio-group>
@@ -35,10 +29,18 @@ export default {
   },
   methods: {},
   data: () => ({
-    icons: {
-      mdiKubernetes,
-      mdiDocker
-    }
+    backends: [
+      {
+        displayName: 'Docker',
+        icon: mdiDocker,
+        value: 'docker',
+      },
+      {
+        displayName: 'Kubernetes',
+        icon: mdiKubernetes,
+        value: 'kubernetes',
+      }
+    ]
   })
 }
 </script>
