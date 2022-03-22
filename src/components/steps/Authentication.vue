@@ -30,26 +30,26 @@
         </v-alert>
       </v-col>
     </v-row>
-    <v-row dense v-show="!webhookUrlIsInsecure()">
+    <v-row dense v-if="webhookUrlIsSecure()">
       <v-col>
         <CertificateField
             label="Webhook server certificate"
             v-model="answers.authentication.webhook.certificate"
             :rules="[
-              v => (!webhookUrlIsInsecure() && !!v) || 'Please provide a certificate for the webhook server. ContainerSSH uses this certificate to validate it is sending the user credentials to the correct server.'
-          ]"
+            v => (webhookUrlIsSecure() && !!v) || 'Please provide a certificate for the webhook server. ContainerSSH uses this certificate to validate it is sending the user credentials to the correct server.'
+        ]"
         ></CertificateField>
       </v-col>
     </v-row>
-    <v-row dense v-show="!webhookUrlIsInsecure()">
+    <v-row dense v-if="webhookUrlIsSecure()">
       <v-col>
         <v-checkbox
             label="TLS client authentication"
             :hint="
-              webhookUrlIsInsecure() ?
-              'TLS client authentication is not available with http:// URLs.' :
-              'ContainerSSH can authenticate itself with the authentication webhook server using TLS client certificates. Use this option to prevent brute forcing passwords against a publicly available authentication webhook server. Alternatively, firewall your webhook server.'
-            "
+            webhookUrlIsInsecure() ?
+            'TLS client authentication is not available with http:// URLs.' :
+            'ContainerSSH can authenticate itself with the authentication webhook server using TLS client certificates. Use this option to prevent brute forcing passwords against a publicly available authentication webhook server. Alternatively, firewall your webhook server.'
+          "
             v-model="answers.authentication.webhook.tlsClientAuthentication"
             :disabled="webhookUrlIsInsecure()"
             persistent-hint
@@ -57,7 +57,7 @@
         </v-checkbox>
       </v-col>
     </v-row>
-    <v-row dense v-show="!webhookUrlIsInsecure()">
+    <v-row dense v-if="webhookUrlIsSecure()">
       <v-col>
         <v-alert
             v-show="!answers.authentication.webhook.tlsClientAuthentication"
@@ -103,6 +103,9 @@ export default {
   methods: {
     webhookUrlIsInsecure: function () {
       return this.answers.authentication.webhook.url.startsWith('http:')
+    },
+    webhookUrlIsSecure: function () {
+      return this.answers.authentication.webhook.url.startsWith('https:')
     }
   },
   data: () => ({

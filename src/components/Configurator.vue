@@ -1,91 +1,95 @@
 <template>
-  <v-form
-      v-model="configurationForm"
+  <v-stepper
+      v-model="step"
+      vertical
   >
-    <v-stepper
-        v-model="step"
-        vertical
+    <!-- region Step 1: Welcome -->
+    <!-- region Header -->
+    <v-stepper-step
+        :complete="isCompleted(1)"
+        @click="goToStepIfCompleted(1)"
+        step="1"
     >
-      <!-- region Step 1: Welcome -->
-      <!-- region Header -->
-      <v-stepper-step
-          :complete="isCompleted(1)"
-          @click="goToStepIfCompleted(1)"
-          step="1"
+      Welcome
+    </v-stepper-step>
+    <!-- endregion -->
+    <!-- region Content -->
+    <v-stepper-content step="1">
+      <Welcome :answers="answers"/>
+      <v-btn
+          color="primary"
+          @click="goToStep(2)"
       >
-        Welcome
-      </v-stepper-step>
-      <!-- endregion -->
-      <!-- region Content -->
-      <v-stepper-content step="1">
-        <Welcome :answers="answers"/>
-        <v-btn
-            color="primary"
-            @click="goToStep(2)"
-        >
-          Continue
-        </v-btn>
-      </v-stepper-content>
-      <!-- endregion -->
-      <!-- endregion -->
+        Continue
+      </v-btn>
+    </v-stepper-content>
+    <!-- endregion -->
+    <!-- endregion -->
 
-      <!-- region Step 2: Authentication -->
-      <!-- region Header -->
-      <v-stepper-step
-          :complete="isCompleted(2)"
-          @click="goToStepIfCompleted(2)"
-          step="2"
-      >
-        Authentication
-        <small class="mt-1" v-show="isCompleted(2)">
-          Webhook URL:
-          <pre class="d-inline">{{ answers.authentication.webhook.url }}</pre>
-          <span v-show="webhookUrlIsInsecure()">
+    <!-- region Step 2: Authentication -->
+    <!-- region Header -->
+    <v-stepper-step
+        :rules="[() => authenticationForm]"
+        :complete="isCompleted(2)"
+        @click="goToStepIfCompleted(2)"
+        step="2"
+    >
+      Authentication
+      <small class="mt-1" v-show="isCompleted(2)">
+        Webhook URL:
+        <pre class="d-inline">{{ answers.authentication.webhook.url }}</pre>
+        <span v-show="webhookUrlIsInsecure()">
             without TLS-encryption
           </span>
-        </small>
-      </v-stepper-step>
-      <!-- endregion -->
-      <!-- region Content -->
-      <v-stepper-content step="2">
+      </small>
+    </v-stepper-step>
+    <!-- endregion -->
+    <!-- region Content -->
+    <v-stepper-content step="2">
+      <v-form v-model="authenticationForm">
         <Authentication :answers="answers"/>
         <v-btn
             color="primary"
             @click="goToStep(3)"
+            :disabled="!authenticationForm"
         >
           Continue
         </v-btn>
         <v-btn text @click="goToStep(1)">
           Back
         </v-btn>
-      </v-stepper-content>
-      <!-- endregion -->
-      <!-- endregion -->
+      </v-form>
+    </v-stepper-content>
+    <!-- endregion -->
+    <!-- endregion -->
 
-      <!-- region Step 3: Dynamic configuration -->
-      <!-- region Header -->
-      <v-stepper-step
-          :complete="isCompleted(3)"
-          @click="goToStepIfCompleted(3)"
-          step="3"
-      >
-        Dynamic configuration
-        <small class="mt-1" v-show="isCompleted(3) && answers.configuration.use">
-          Config server URL:
-          <pre class="d-inline">{{ answers.configuration.server.url }}</pre>
-          <span v-show="configServerUrlIsInsecure()">
+    <!-- region Step 3: Dynamic configuration -->
+    <!-- region Header -->
+    <v-stepper-step
+        :rules="[() => dynamicConfigurationForm]"
+        :complete="isCompleted(3)"
+        @click="goToStepIfCompleted(3)"
+        step="3"
+    >
+      Dynamic configuration
+      <small class="mt-1" v-show="isCompleted(3) && answers.configuration.use">
+        Config server URL:
+        <pre class="d-inline">{{ answers.configuration.server.url }}</pre>
+        <span v-show="configServerUrlIsInsecure()">
             without TLS-encryption
           </span>
-        </small>
-        <small class="mt-1" v-show="isCompleted(3) && !answers.configuration.use">
-          Disabled.
-        </small>
-      </v-stepper-step>
-      <!-- endregion -->
-      <!-- region Content -->
-      <v-stepper-content step="3">
+      </small>
+      <small class="mt-1" v-show="isCompleted(3) && !answers.configuration.use">
+        Disabled.
+      </small>
+    </v-stepper-step>
+    <!-- endregion -->
+    <!-- region Content -->
+    <v-stepper-content step="3">
+      <v-form v-model="dynamicConfigurationForm">
         <DynamicConfiguration :answers="answers"/>
         <v-btn
+            :disabled="!dynamicConfigurationForm"
             color="primary"
             @click="goToStep(4)"
         >
@@ -94,31 +98,35 @@
         <v-btn text @click="goToStep(2)">
           Back
         </v-btn>
-      </v-stepper-content>
-      <!-- endregion -->
-      <!-- endregion -->
+      </v-form>
+    </v-stepper-content>
+    <!-- endregion -->
+    <!-- endregion -->
 
-      <!-- region Step 4: Backend -->
-      <!-- region Header -->
-      <v-stepper-step
-          :complete="isCompleted(4)"
-          @click="goToStepIfCompleted(4)"
-          step="4"
-      >
-        Backend
-        <small class="mt-1" v-show="isCompleted(4)">
-          Using:
-          <pre class="d-inline">{{ answers.backend.backend }}</pre>,
-          host:
-          <pre v-if="answers.backend.backend === 'docker'"
-               class="d-inline">{{ answers.backend.docker.host }}</pre>
-          <pre v-if="answers.backend.backend === 'kubernetes'"
-               class="d-inline">{{ answers.backend.kubernetes.host }}</pre>
-        </small>
-      </v-stepper-step>
-      <!-- endregion -->
-      <!-- region Content -->
-      <v-stepper-content step="4">
+    <!-- region Step 4: Backend -->
+    <!-- region Header -->
+    <v-stepper-step
+        :rules="[() => backendForm]"
+        :complete="isCompleted(4)"
+        @click="goToStepIfCompleted(4)"
+        step="4"
+    >
+      Backend
+      <small class="mt-1" v-show="isCompleted(4)">
+        Using:
+        <pre class="d-inline">{{ answers.backend.backend }}</pre>
+        ,
+        host:
+        <pre v-if="answers.backend.backend === 'docker'"
+             class="d-inline">{{ answers.backend.docker.host }}</pre>
+        <pre v-if="answers.backend.backend === 'kubernetes'"
+             class="d-inline">{{ answers.backend.kubernetes.host }}</pre>
+      </small>
+    </v-stepper-step>
+    <!-- endregion -->
+    <!-- region Content -->
+    <v-stepper-content step="4">
+      <v-form v-model="backendForm">
         <Backend :answers="answers"/>
         <div v-if="answers.backend.backend === 'docker'">
           <BackendDocker :answers="answers"/>
@@ -127,6 +135,7 @@
           <BackendKubernetes :answers="answers"/>
         </div>
         <v-btn
+            :disabled="!backendForm"
             color="primary"
             @click="goToStep(5)"
         >
@@ -135,27 +144,28 @@
         <v-btn text @click="goToStep(3)">
           Back
         </v-btn>
-      </v-stepper-content>
-      <!-- endregion -->
-      <!-- endregion -->
+      </v-form>
+    </v-stepper-content>
+    <!-- endregion -->
+    <!-- endregion -->
 
-      <!-- region Step 5: Download -->
-      <!-- region Header -->
-      <v-stepper-step
-          :complete="isCompleted(5)"
-          step="5"
-      >
-        Download
-      </v-stepper-step>
-      <!-- endregion -->
-      <!-- region Content -->
-      <v-stepper-content step="5">
-        <Download :answers="answers" ref="configGenerator" />
-      </v-stepper-content>
-      <!-- endregion -->
-      <!-- endregion -->
-    </v-stepper>
-  </v-form>
+    <!-- region Step 5: Download -->
+    <!-- region Header -->
+    <v-stepper-step
+        :complete="isCompleted(5)"
+        step="5"
+    >
+      Download
+    </v-stepper-step>
+    <!-- endregion -->
+    <!-- region Content -->
+    <v-stepper-content step="5">
+      <Download :answers="answers" ref="configGenerator"/>
+    </v-stepper-content>
+    <!-- endregion -->
+    <!-- endregion -->
+  </v-stepper>
+
 </template>
 
 <script type="ts">
@@ -181,7 +191,11 @@ export default {
   data: () => ({
     icons: {},
     step: 1,
-    configurationForm: "",
+    // Forms
+    authenticationForm: false,
+    dynamicConfigurationForm: false,
+    backendForm: false,
+    // Answers
     answers: {
       authentication: {
         webhook: {
@@ -204,7 +218,7 @@ export default {
         docker: {
           host: "unix:///var/run/docker.sock",
           authenticationMethod: 'none',
-          image: 'containerssh/containerssh',
+          image: 'containerssh/containerssh-guest-image',
           env: [],
           mount: []
         },
@@ -225,7 +239,7 @@ export default {
     webhookUrlIsInsecure: function () {
       return this.answers.authentication.webhook.url.startsWith('http:')
     },
-    configServerUrlIsInsecure: function() {
+    configServerUrlIsInsecure: function () {
       return this.answers.configuration.server.url.startsWith('http:')
     },
     goToStep: function (step) {

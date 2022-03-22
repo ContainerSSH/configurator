@@ -11,7 +11,7 @@
         </v-checkbox>
       </v-col>
     </v-row>
-    <v-row v-show="useDynamicConfiguration()">
+    <v-row v-if="useDynamicConfiguration()">
       <v-col>
         <v-text-field
             label="Server server URL"
@@ -24,7 +24,7 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row dense v-show="useDynamicConfiguration() && serverUrlIsInsecure()">
+    <v-row dense v-if="useDynamicConfiguration() && serverUrlIsInsecure()">
       <v-col>
         <v-alert
             :icon="icons.mdiAlert"
@@ -41,7 +41,7 @@
         </v-alert>
       </v-col>
     </v-row>
-    <v-row dense v-show="useDynamicConfigurationAndUrlIsSecure()">
+    <v-row dense v-if="useDynamicConfigurationAndUrlIsSecure()">
       <v-col>
         <CertificateField
             label="Configuration server certificate"
@@ -52,7 +52,7 @@
         ></CertificateField>
       </v-col>
     </v-row>
-    <v-row dense v-show="useDynamicConfigurationAndUrlIsSecure()">
+    <v-row dense v-if="useDynamicConfigurationAndUrlIsSecure()">
       <v-col>
         <v-checkbox
             label="TLS client authentication"
@@ -68,7 +68,7 @@
         </v-checkbox>
       </v-col>
     </v-row>
-    <v-row dense v-show="useDynamicConfigurationAndUrlIsSecure()">
+    <v-row dense v-if="useDynamicConfigurationAndUrlIsSecure()">
       <v-col>
         <v-alert
             v-show="!answers.configuration.server.tlsClientAuthentication"
@@ -115,11 +115,14 @@ export default {
     serverUrlIsInsecure: function () {
       return this.answers.configuration.server.url.startsWith('http:')
     },
+    serverUrlIsSecure: function () {
+      return this.answers.configuration.server.url.startsWith('https:')
+    },
     useDynamicConfiguration: function() {
       return this.answers.configuration.use
     },
     useDynamicConfigurationAndUrlIsSecure: function() {
-      return this.useDynamicConfiguration() && !this.serverUrlIsInsecure();
+      return this.useDynamicConfiguration() && this.serverUrlIsSecure();
     }
   },
   data: () => ({

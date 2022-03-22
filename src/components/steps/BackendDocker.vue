@@ -74,7 +74,10 @@ export default {
         displayName: 'Certificate',
         value: 'certificate',
       }
-    ]
+    ],
+    rules: {
+      required: v => !!v || 'Required.',
+    }
   })
 }
 </script>

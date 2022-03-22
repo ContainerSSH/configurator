@@ -6,6 +6,7 @@
             label="Server name"
             hint="Server name to be set in the SNI and used by the client for TLS verification."
             v-model="answers.backend.kubernetes.serverName"
+            :rules="[rules.required]"
             persistent-hint
             outlined
             required
@@ -18,6 +19,7 @@
             label="Host"
             hint="A host:port pair, or a URL to the Kubernetes apiserver. Defaults to kubernetes.default.svc."
             v-model="answers.backend.kubernetes.host"
+            :rules="[rules.required]"
             persistent-hint
             outlined
             required
@@ -30,6 +32,7 @@
             label="API Endpoint"
             hint="Sub-path that points to the API root. Defaults to /api"
             v-model="answers.backend.kubernetes.path"
+            :rules="[rules.required]"
             persistent-hint
             outlined
             required
@@ -55,6 +58,7 @@
       <v-col>
         <v-text-field
             v-model="answers.backend.kubernetes.image"
+            :rules="[rules.required]"
             label="Container guest image"
             outlined
         >
@@ -82,7 +86,10 @@ export default {
         displayName: 'Certificate',
         value: 'certificate',
       },
-    ]
+    ],
+    rules: {
+      required: v => !!v || 'Required.'
+    }
   })
 }
 </script>
