@@ -96,20 +96,20 @@ export default {
       // region Dynamic Configuration
       if (this.answers.configuration.use) {
         this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
-          configuration: {
+          configserver: {
             url: this.answers.configuration.server.url
           }
         })
         if (this.answers.configuration.server.url.startsWith('https:')) {
           this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
-            configuration: {
+            configserver: {
               cert: this.answers.configuration.server.certificate
             }
           })
         }
         if (this.answers.configuration.server.tlsClientAuthentication) {
           this.yamlStructure = lodash.mergeWith(this.yamlStructure, {
-            configuration: {
+            configserver: {
               cacert: "-----BEGIN CERTIFICATE-----\n(PLEASE REPLACE)\n-----END CERTIFICATE-----",
               key: "-----BEGIN RSA PRIVATE KEY-----\n(PLEASE REPLACE)\n-----END RSA PRIVATE KEY-----"
             }
@@ -128,6 +128,11 @@ export default {
           docker: {
             connection: {
               host: this.answers.backend.docker.host
+            },
+            execution: {
+              container: {
+                image: this.answers.backend.docker.image
+              }
             }
           }
         })
