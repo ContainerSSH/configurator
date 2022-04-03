@@ -57,7 +57,7 @@
     "minimist": "^1.2.6",
     "node-forge": "^1.0.0",
     "ansi-regex": "^5.0.1",
-    "lodash": "^4.17.20"
+    "lodash": "^4.17.21"
   },
   "license": "MIT-0"
 }
